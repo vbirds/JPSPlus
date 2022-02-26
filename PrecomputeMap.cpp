@@ -76,139 +76,16 @@ DistantJumpPoints** PrecomputeMap::CalculateMap()
 	return m_distantJumpPointMap;
 }
 
-void PrecomputeMap::SaveMap(const char *filename)
-{
-#ifdef FILE_FORMAT_ASCII
-	ofstream file(filename);
-
-	for (int r = 0; r < m_height; r++)
-	{
-		for (int c = 0; c < m_width; c++)
-		{
-			DistantJumpPoints* jumpPoints = &m_distantJumpPointMap[r][c];
-
-			for (int i = 0; i < 8; i++)
-			{
-				file << (int)jumpPoints->jumpDistance[i] << "\t";
-			}
-			for (int dir = 0; dir < 8; dir++)
-			{
-				for (int minMaxIndex = 0; minMaxIndex < 4; minMaxIndex++)
-				{
-					file << (int)m_goalBoundsMap[r][c].bounds[dir][minMaxIndex] << "\t";
-				}
-			}
-			file << std::endl;
-		}
-		file << std::endl;
-	}
-#else
-	ofstream file(filename, std::ios::out | std::ios::binary);
-
-	for (int r = 0; r < m_height; r++)
-	{
-		for (int c = 0; c < m_width; c++)
-		{
-			if (IsWall(r, c))
-			{
-				// Don't save data if a wall
-				continue;
-			}
-
-			// Save Jump Distances
-			DistantJumpPoints* jumpPoints = &m_distantJumpPointMap[r][c];
-
-			for (int i = 0; i < 8; i++)
-			{
-				file.write((char*)&jumpPoints->jumpDistance[i], 2);
-			}
-		}
-	}
-#endif
-}
-
-void PrecomputeMap::LoadMap(const char *filename)
-{
-	m_mapCreated = true;
-
-#ifdef FILE_FORMAT_ASCII
-	ifstream file(filename, std::ios::in);
-
-	InitArray(m_jumpDistancesAndGoalBoundsMap, m_width, m_height);
-
-	for (int r = 0; r < m_height; r++)
-	{
-		for (int c = 0; c < m_width; c++)
-		{
-			JumpDistancesAndGoalBounds* map = &m_jumpDistancesAndGoalBoundsMap[r][c];
-			map->blockedDirectionBitfield = 0;
-
-			for (int i = 0; i < 8; i++)
-			{
-				file >> map->jumpDistance[i];
-			}
-			for (int i = 0; i < 8; i++)
-			{
-				// Detect invalid movement from jump distances
-				// (jump distance of zero is invalid movement)
-				if (map->jumpDistance[i] == 0)
-				{
-					map->blockedDirectionBitfield |= (1 << i);
-				}
-			}
-			for (int dir = 0; dir < 8; dir++)
-			{
-				file >> m_jumpDistancesAndGoalBoundsMap[r][c].bounds[dir][MinRow];
-				file >> m_jumpDistancesAndGoalBoundsMap[r][c].bounds[dir][MaxRow];
-				file >> m_jumpDistancesAndGoalBoundsMap[r][c].bounds[dir][MinCol];
-				file >> m_jumpDistancesAndGoalBoundsMap[r][c].bounds[dir][MaxCol];
-			}
-
-		}
-	}
-#else
-	ifstream file(filename, std::ios::in | std::ios::binary);
-
-	InitArray(m_jumpDistancesAndGoalBoundsMap, m_width, m_height);
-
-	for (int r = 0; r < m_height; r++)
-	{
-		for (int c = 0; c < m_width; c++)
-		{
-			if (IsWall(r, c))
-			{
-				// Don't load data if a wall
-				continue;
-			}
-
-			JumpDistancesAndGoalBounds* map = &m_jumpDistancesAndGoalBoundsMap[r][c];
-			map->blockedDirectionBitfield = 0;
-
-			// Load Jump Distances
-			for (int i = 0; i < 8; i++)
-			{
-				file.read((char*)&map->jumpDistance[i], 2);
-			}
-
-			// Fabricate wall bitfield for each node
-			for (int i = 0; i < 8; i++)
-			{
-				// Jump distance of zero is invalid movement and means a wall
-				if (map->jumpDistance[i] == 0)
-				{
-					map->blockedDirectionBitfield |= (1 << i);
-				}
-			}
-		}
-	}
-#endif
-}
-
 void PrecomputeMap::ConstrutMap()
 {
 	m_mapCreated = true;
 
-	InitArray(m_jumpDistancesAndGoalBoundsMap, m_width, m_height);
+//	InitArray(m_jumpDistancesAndGoalBoundsMap, m_width, m_height);
+    m_jumpDistancesAndGoalBoundsMap = new JumpDistancesAndGoalBounds[m_width*m_height];
+    memset(m_jumpDistancesAndGoalBoundsMap, 0, sizeof(JumpDistancesAndGoalBounds)*m_width*m_height);
+
+	int iSize = sizeof(JumpDistancesAndGoalBounds)*m_width*m_height;
+
 
 	for (int r = 0; r < m_height; r++)
 	{
@@ -220,7 +97,10 @@ void PrecomputeMap::ConstrutMap()
 				continue;
 			}
 
-			JumpDistancesAndGoalBounds* map = &m_jumpDistancesAndGoalBoundsMap[r][c];
+//			JumpDistancesAndGoalBounds* map = &m_jumpDistancesAndGoalBoundsMap[r][c];
+			int idx = c + (r*m_width);
+			// printf("%2d,%2d idx:%d\n", r, c, idx);
+            JumpDistancesAndGoalBounds* map = &m_jumpDistancesAndGoalBoundsMap[idx];
 			map->blockedDirectionBitfield = 0;
 
             // Init jumpDistance for each points.
@@ -309,6 +189,7 @@ void PrecomputeMap::CalculateJumpPointMap()
 	{
 		for (int c = 0; c < m_width; ++c)
 		{
+            // 阻挡
 			if (!m_map[c + (r * m_width)])
 			{
 				// North

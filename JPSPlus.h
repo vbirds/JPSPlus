@@ -63,7 +63,8 @@ enum PathStatus
 class JPSPlus
 {
 public:
-	JPSPlus(JumpDistancesAndGoalBounds** jumpDistancesAndGoalBoundsMap, std::vector<bool> &rawMap, int w, int h);
+//	JPSPlus(JumpDistancesAndGoalBounds** jumpDistancesAndGoalBoundsMap, int w, int h);
+	JPSPlus(JumpDistancesAndGoalBounds* jumpDistancesAndGoalBoundsMap, int w, int h);
 	~JPSPlus();
 
 	bool GetPath(xyLocJPS& s, xyLocJPS& g, std::vector<xyLocJPS> &path);
@@ -135,7 +136,25 @@ protected:
 
 	void PushNewNode(PathfindingNode * newSuccessor, PathfindingNode * currentNode, ArrayDirections parentDirection, unsigned int givenCost);
 
-	// 2D array initialization and destruction
+    unsigned int ConvPos(PathfindingNode * node)
+    {
+        unsigned int x = node->m_col << 16;
+        return (x | node->m_row);
+    }
+
+    PathfindingNode * GetPosKeyNode(unsigned int key)
+    {
+        if (key == 0)
+        {
+            return NULL;
+        }
+        int col = key >> 16;
+        int row = key & 0xffff;
+        return &m_mapNodes[col + row*m_width];
+    }
+
+
+    // 2D array initialization and destruction
 	template <typename T> void InitArray(T**& t, int width, int height);
 	template <typename T> void DestroyArray(T**& t);
 
@@ -147,10 +166,12 @@ protected:
 	SimpleUnsortedPriorityQueue* m_simpleUnsortedPriorityQueue;
 
 	// Precomputed data
-	JumpDistancesAndGoalBounds** m_jumpDistancesAndGoalBounds;
+//	JumpDistancesAndGoalBounds** m_jumpDistancesAndGoalBounds;
+	JumpDistancesAndGoalBounds* m_jumpDistancesAndGoalBounds;
+
 
 	// Preallocated nodes
-	PathfindingNode** m_mapNodes;
+	PathfindingNode* m_mapNodes;
 
 	// Search specific info
 	unsigned short m_currentIteration;	// This allows us to know if a node has been touched this iteration (faster than clearing all the nodes before each search)

@@ -33,7 +33,7 @@ void Timer::StartTimer() {
     gettimeofday(&start, nullptr);
 }
 
-double Timer::EndTimer() {
+int64_t Timer::EndTimer() {
     gettimeofday(&end, nullptr);
     return GetElapsedTime();
 }

@@ -20,15 +20,37 @@
 #include "Wrapper.h"
 #include "Log.h"
 
+int Random(int a, int b)
+{
+    if (a == b)
+    {
+        return a;
+    }
+    else if (a > b)
+    {
+        return b;
+    }
+    else
+    {
+        if (a < 0)
+        {
+            return a + Random(0, b-a);
+        }
+        else
+        {
+            return a + (int) ((b-a+1) * ((float)rand() / (RAND_MAX + 1.0)));
+        }
+    }
+
+    return a;
+}
+
 
 int main(int argc, char *argv[]) {
-    double allTestsTotalTime = 0;
+    int64_t allTestsTotalTime = 0;
     Timer *timer = new Timer();
     std::vector<bool> mapData;
-    int mapSize = 100;
-    int buildings[3][6] = {{2, 0, 2, 98, 0, 1},
-                           {4, 1, 4, 99, 1, 1},
-                           {6, 0, 6, 98, 0, 1}};
+    int mapSize = 1000;
 
     //Construct map.
     for (int i = 0; i < mapSize; i++) {
@@ -37,30 +59,29 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    // Init obstacles.
-    for (int i = 0; i < 3; i++) {
-        for (int x = buildings[i][0]; x <= buildings[i][2]; x++) {
-            for (int y = buildings[i][1]; y <= buildings[i][3]; y++) {
-                mapData[x + y * mapSize] = false;
-            }
-        }
+    for (int i = 0; i < 80000; i++)
+    {
+        int x = Random(0, 999);
+        int y = Random(0, 999);
+        // printf("x:%3d y:%3d\n", x, y);
+        mapData[x + y * mapSize] = false;
     }
 
     JPSPWrapper *jpgb = new JPSPWrapper(mapData, mapSize, mapSize);
     jpgb->Preprocess();
 
     timer->StartTimer();
-
-    xyLoc *start = new xyLoc(0, 0), *end = new xyLoc(0, 0);
+    xyLoc *start = new xyLoc(10, 10), *end = new xyLoc(13, 15);
     std::vector<xyLoc> *path = jpgb->GetPath((xyLoc &) *start, (xyLoc &) *end);
 
     allTestsTotalTime += timer->EndTimer();
 
+#if 1
     if (path->size() > 0) {
         printf("Path found: ");
         for (unsigned int t = 0; t < path->size(); t++) {
             if (t != path->size() - 1) {
-                if (t % 10 == 0) {
+                if (t % 10 == 0 && t != 0) {
                     printf("\n");
                 } else {
                     printf("(%d, %d)->", (*path)[t].x, (*path)[t].y);
@@ -74,9 +95,7 @@ int main(int argc, char *argv[]) {
     }
     (*path).clear();
 
-    printf("All tests total time: %f", allTestsTotalTime);
-
-    getchar();
-
+    printf("All tests total time: %lld", allTestsTotalTime);
+#endif
     return 0;
 }

@@ -39,7 +39,11 @@ public:
 
     void StartTimer();
 
-    double EndTimer();
+    int64_t EndTimer();
 
-    double GetElapsedTime() { return end.tv_usec - start.tv_usec; }
+    int64_t GetElapsedTime()
+    {
+        return ((int64_t)end.tv_sec-(int64_t)start.tv_sec)*1000 +
+               ((int64_t)end.tv_usec-(int64_t)start.tv_usec)/1000;
+    }
 };

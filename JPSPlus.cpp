@@ -53,26 +53,28 @@
 
 typedef const void (JPSPlus::*FunctionPointer)(PathfindingNode * currentNode, JumpDistancesAndGoalBounds * map);
 
-JPSPlus::JPSPlus(JumpDistancesAndGoalBounds** jumpDistancesAndGoalBoundsMap, std::vector<bool> &rawMap, int w, int h)
+//JPSPlus::JPSPlus(JumpDistancesAndGoalBounds** jumpDistancesAndGoalBoundsMap, int w, int h)
+JPSPlus::JPSPlus(JumpDistancesAndGoalBounds* jumpDistancesAndGoalBoundsMap, int w, int h)
 {
 	// Map properties
 	m_width = w;
 	m_height = h;
 
 	// Adjust preallocation for worst-case
-	m_simpleUnsortedPriorityQueue = new SimpleUnsortedPriorityQueue(10000);
-	m_fastStack = new FastStack(1000);
+	m_simpleUnsortedPriorityQueue = new SimpleUnsortedPriorityQueue(100000);
+	m_fastStack = new FastStack(100000);
 
 	m_jumpDistancesAndGoalBounds = jumpDistancesAndGoalBoundsMap;
 	m_currentIteration = 1;	// This gets incremented on each search
 
 	// Initialize nodes
-	InitArray(m_mapNodes, m_width, m_height);
+	// InitArray(m_mapNodes, m_width, m_height);
+    m_mapNodes = new PathfindingNode[m_width * m_height];
 	for (int r = 0; r < m_height; r++)
 	{
 		for (int c = 0; c < m_width; c++)
 		{
-			PathfindingNode& node = m_mapNodes[r][c];
+			PathfindingNode& node = m_mapNodes[c + r *m_width];
 			node.m_row = r;
 			node.m_col = c;
 			node.m_listStatus = PathfindingNode::OnNone;
@@ -85,8 +87,9 @@ JPSPlus::~JPSPlus()
 {
 	delete m_fastStack;
 	delete m_simpleUnsortedPriorityQueue;
-	DestroyArray(m_jumpDistancesAndGoalBounds);
-	DestroyArray(m_mapNodes);
+//	DestroyArray(m_jumpDistancesAndGoalBounds);
+	// DestroyArray(m_mapNodes);
+    delete[] m_mapNodes;
 }
 
 template <typename T>
@@ -127,7 +130,8 @@ bool JPSPlus::GetPath(xyLocJPS& s, xyLocJPS& g, std::vector<xyLocJPS> &path)
 		// Initialize map
 		path.clear();
 
-		m_goalNode = &m_mapNodes[m_goalRow][m_goalCol];
+		//m_goalNode = &m_mapNodes[m_goalRow][m_goalCol];
+		m_goalNode = &m_mapNodes[m_goalCol + m_goalRow * m_width];
 		m_currentIteration++;
 
 		m_fastStack->Reset();
@@ -135,8 +139,9 @@ bool JPSPlus::GetPath(xyLocJPS& s, xyLocJPS& g, std::vector<xyLocJPS> &path)
 	}
 
 	// Create starting node
-	PathfindingNode* startNode = &m_mapNodes[startRow][startCol];
-	startNode->m_parent = NULL;
+//	PathfindingNode* startNode = &m_mapNodes[startRow][startCol];
+	PathfindingNode* startNode = &m_mapNodes[startCol + startRow * m_width];
+	startNode->m_parent = 0;
 	startNode->m_givenCost = 0;
 	startNode->m_finalCost = 0;
 	startNode->m_listStatus = PathfindingNode::OnOpen;
@@ -172,7 +177,10 @@ PathStatus JPSPlus::SearchLoop(PathfindingNode* startNode)
 			return PathFound;
 		}
 
-		JumpDistancesAndGoalBounds* jumpDistancesAndGoalBounds = &m_jumpDistancesAndGoalBounds[startNode->m_row][startNode->m_col];
+//		JumpDistancesAndGoalBounds* jumpDistancesAndGoalBounds = &m_jumpDistancesAndGoalBounds[startNode->m_row][startNode->m_col];
+        int idx = (int)startNode->m_col + ((int)startNode->m_row* m_width);
+        // printf("%2d,%2d idx:%d\n", startNode->m_row, startNode->m_col, idx);
+		JumpDistancesAndGoalBounds* jumpDistancesAndGoalBounds = &m_jumpDistancesAndGoalBounds[idx];
 		Explore_AllDirections(startNode, jumpDistancesAndGoalBounds);
 		startNode->m_listStatus = PathfindingNode::OnClosed;
 	}
@@ -196,9 +204,12 @@ PathStatus JPSPlus::SearchLoop(PathfindingNode* startNode)
 		}
 
 		// Explore nodes based on parent
-		JumpDistancesAndGoalBounds* jumpDistancesAndGoalBounds =
-			&m_jumpDistancesAndGoalBounds[currentNode->m_row][currentNode->m_col];
-
+//		JumpDistancesAndGoalBounds* jumpDistancesAndGoalBounds =
+//			&m_jumpDistancesAndGoalBounds[currentNode->m_row][currentNode->m_col];
+        int idx = (int)currentNode->m_col + ((int)currentNode->m_row * m_width);
+        // printf("%2d,%2d idx:%d\n", currentNode->m_row, currentNode->m_col, idx);
+        JumpDistancesAndGoalBounds* jumpDistancesAndGoalBounds =
+                &m_jumpDistancesAndGoalBounds[idx];
 		// Allow cross obstacle situation, we should search all directions.
 		Explore_AllDirections(currentNode, jumpDistancesAndGoalBounds);
 
@@ -218,6 +229,7 @@ void JPSPlus::FinalizePath(std::vector<xyLocJPS> &finalPath)
 		loc.x = curNode->m_col;
 		loc.y = curNode->m_row;
 
+#if 0
 		if (prevNode != NULL)
 		{
 			// Insert extra nodes if needed (may not be neccessary depending on final path use)
@@ -250,10 +262,11 @@ void JPSPlus::FinalizePath(std::vector<xyLocJPS> &finalPath)
 				finalPath.push_back(locNew);
 			}
 		}
-
+#endif
 		finalPath.push_back(loc);
 		prevNode = curNode;
-		curNode = curNode->m_parent;
+        // find parent
+        curNode = GetPosKeyNode(curNode->m_parent);
 	}
 	std::reverse(finalPath.begin(), finalPath.end());
 }
@@ -679,7 +692,7 @@ void JPSPlus::SearchDown(PathfindingNode * currentNode, int jumpDistance)
 		// Directly jump
 		int newRow = row + jumpDistance;
 		unsigned int givenCost = currentNode->m_givenCost + FIXED_POINT_SHIFT(jumpDistance);
-		PathfindingNode * newSuccessor = &m_mapNodes[newRow][col];
+		PathfindingNode * newSuccessor = &m_mapNodes[col + newRow * m_width];
 		PushNewNode(newSuccessor, currentNode, Down, givenCost);
 	}
 }
@@ -705,7 +718,7 @@ void JPSPlus::SearchDownRight(PathfindingNode * currentNode, int jumpDistance)
 			int newRow = row + smallerDiff;
 			int newCol = col + smallerDiff;
 			unsigned int givenCost = currentNode->m_givenCost + (SQRT_2 * smallerDiff);
-			PathfindingNode * newSuccessor = &m_mapNodes[newRow][newCol];
+			PathfindingNode * newSuccessor = &m_mapNodes[newCol + newRow *m_width];
 			PushNewNode(newSuccessor, currentNode, DownRight, givenCost);
 			return;
 		}
@@ -717,7 +730,7 @@ void JPSPlus::SearchDownRight(PathfindingNode * currentNode, int jumpDistance)
 		int newRow = row + jumpDistance;
 		int newCol = col + jumpDistance;
 		unsigned int givenCost = currentNode->m_givenCost + (SQRT_2 * jumpDistance);
-		PathfindingNode * newSuccessor = &m_mapNodes[newRow][newCol];
+		PathfindingNode * newSuccessor = &m_mapNodes[newCol + newRow * m_width];
 		PushNewNode(newSuccessor, currentNode, DownRight, givenCost);
 	}
 }
@@ -748,7 +761,7 @@ void JPSPlus::SearchRight(PathfindingNode * currentNode, int jumpDistance)
 		// Directly jump
 		int newCol = col + jumpDistance;
 		unsigned int givenCost = currentNode->m_givenCost + FIXED_POINT_SHIFT(jumpDistance);
-		PathfindingNode * newSuccessor = &m_mapNodes[row][newCol];
+		PathfindingNode * newSuccessor = &m_mapNodes[newCol + row * m_width];
 		PushNewNode(newSuccessor, currentNode, Right, givenCost);
 	}
 }
@@ -774,7 +787,7 @@ void JPSPlus::SearchUpRight(PathfindingNode * currentNode, int jumpDistance)
 			int newRow = row - smallerDiff;
 			int newCol = col + smallerDiff;
 			unsigned int givenCost = currentNode->m_givenCost + (SQRT_2 * smallerDiff);
-			PathfindingNode * newSuccessor = &m_mapNodes[newRow][newCol];
+			PathfindingNode * newSuccessor = &m_mapNodes[newCol + newRow * m_width];
 			PushNewNode(newSuccessor, currentNode, UpRight, givenCost);
 			return;
 		}
@@ -786,7 +799,7 @@ void JPSPlus::SearchUpRight(PathfindingNode * currentNode, int jumpDistance)
 		int newRow = row - jumpDistance;
 		int newCol = col + jumpDistance;
 		unsigned int givenCost = currentNode->m_givenCost + (SQRT_2 * jumpDistance);
-		PathfindingNode * newSuccessor = &m_mapNodes[newRow][newCol];
+		PathfindingNode * newSuccessor = &m_mapNodes[newCol + newRow * m_width];
 		PushNewNode(newSuccessor, currentNode, UpRight, givenCost);
 	}
 }
@@ -817,7 +830,7 @@ void JPSPlus::SearchUp(PathfindingNode * currentNode, int jumpDistance)
 		// Directly jump
 		int newRow = row - jumpDistance;
 		unsigned int givenCost = currentNode->m_givenCost + FIXED_POINT_SHIFT(jumpDistance);
-		PathfindingNode * newSuccessor = &m_mapNodes[newRow][col];
+		PathfindingNode * newSuccessor = &m_mapNodes[col + newRow * m_width];
 		PushNewNode(newSuccessor, currentNode, Up, givenCost);
 	}
 }
@@ -843,7 +856,7 @@ void JPSPlus::SearchUpLeft(PathfindingNode * currentNode, int jumpDistance)
 			int newRow = row - smallerDiff;
 			int newCol = col - smallerDiff;
 			unsigned int givenCost = currentNode->m_givenCost + (SQRT_2 * smallerDiff);
-			PathfindingNode * newSuccessor = &m_mapNodes[newRow][newCol];
+			PathfindingNode * newSuccessor = &m_mapNodes[newCol + newRow * m_width];
 			PushNewNode(newSuccessor, currentNode, UpLeft, givenCost);
 			return;
 		}
@@ -855,7 +868,7 @@ void JPSPlus::SearchUpLeft(PathfindingNode * currentNode, int jumpDistance)
 		int newRow = row - jumpDistance;
 		int newCol = col - jumpDistance;
 		unsigned int givenCost = currentNode->m_givenCost + (SQRT_2 * jumpDistance);
-		PathfindingNode * newSuccessor = &m_mapNodes[newRow][newCol];
+		PathfindingNode * newSuccessor = &m_mapNodes[newCol + newRow * m_width];
 		PushNewNode(newSuccessor, currentNode, UpLeft, givenCost);
 	}
 }
@@ -886,7 +899,7 @@ void JPSPlus::SearchLeft(PathfindingNode * currentNode, int jumpDistance)
 		// Directly jump
 		int newCol = col - jumpDistance;
 		unsigned int givenCost = currentNode->m_givenCost + FIXED_POINT_SHIFT(jumpDistance);
-		PathfindingNode * newSuccessor = &m_mapNodes[row][newCol];
+		PathfindingNode * newSuccessor = &m_mapNodes[newCol + row * m_width];
 		PushNewNode(newSuccessor, currentNode, Left, givenCost);
 	}
 }
@@ -912,7 +925,7 @@ void JPSPlus::SearchDownLeft(PathfindingNode * currentNode, int jumpDistance)
 			int newRow = row + smallerDiff;
 			int newCol = col - smallerDiff;
 			unsigned int givenCost = currentNode->m_givenCost + (SQRT_2 * smallerDiff);
-			PathfindingNode * newSuccessor = &m_mapNodes[newRow][newCol];
+			PathfindingNode * newSuccessor = &m_mapNodes[newCol + newRow * m_width];
 			PushNewNode(newSuccessor, currentNode, DownLeft, givenCost);
 			return;
 		}
@@ -924,7 +937,7 @@ void JPSPlus::SearchDownLeft(PathfindingNode * currentNode, int jumpDistance)
 		int newRow = row + jumpDistance;
 		int newCol = col - jumpDistance;
 		unsigned int givenCost = currentNode->m_givenCost + (SQRT_2 * jumpDistance);
-		PathfindingNode * newSuccessor = &m_mapNodes[newRow][newCol];
+		PathfindingNode * newSuccessor = &m_mapNodes[newCol + newRow * m_width];
 		PushNewNode(newSuccessor, currentNode, DownLeft, givenCost);
 	}
 }
@@ -952,7 +965,7 @@ void JPSPlus::PushNewNode(
 			heuristicCost = (diffcolumn * SQRT_2_MINUS_ONE) + FIXED_POINT_SHIFT(diffrow);
 		}
 
-		newSuccessor->m_parent = currentNode;
+		newSuccessor->m_parent = ConvPos(currentNode);
 		newSuccessor->m_directionFromParent = parentDirection;
 		newSuccessor->m_givenCost = givenCost;
 		newSuccessor->m_finalCost = givenCost + heuristicCost;
@@ -976,7 +989,7 @@ void JPSPlus::PushNewNode(
 		// Extract heuristic cost (was previously calculated)
 		unsigned int heuristicCost = newSuccessor->m_finalCost - newSuccessor->m_givenCost;
 
-		newSuccessor->m_parent = currentNode;
+		newSuccessor->m_parent = ConvPos(currentNode);
 		newSuccessor->m_directionFromParent = parentDirection;
 		newSuccessor->m_givenCost = givenCost;
 		newSuccessor->m_finalCost = givenCost + heuristicCost;

@@ -85,10 +85,9 @@ public:
 	~PrecomputeMap();
 
 	DistantJumpPoints** CalculateMap();
-	void SaveMap(const char *filename);
-	void LoadMap(const char *filename);
 	void ConstrutMap();
-	JumpDistancesAndGoalBounds** GetPreprocessedMap() { return m_jumpDistancesAndGoalBoundsMap; }
+//	JumpDistancesAndGoalBounds** GetPreprocessedMap() { return m_jumpDistancesAndGoalBoundsMap; }
+	JumpDistancesAndGoalBounds* GetPreprocessedMap() { return m_jumpDistancesAndGoalBoundsMap; }
 	void ReleaseMap() { if (m_mapCreated) DestroyArray(m_distantJumpPointMap); }
 
 protected:
@@ -98,8 +97,8 @@ protected:
 	std::vector<bool> m_map;
 	unsigned char** m_jumpPointMap;
 	DistantJumpPoints** m_distantJumpPointMap;
-	GoalBounds** m_goalBoundsMap;
-	JumpDistancesAndGoalBounds** m_jumpDistancesAndGoalBoundsMap;
+//	JumpDistancesAndGoalBounds** m_jumpDistancesAndGoalBoundsMap;
+	JumpDistancesAndGoalBounds* m_jumpDistancesAndGoalBoundsMap;
 
 	template <typename T> void InitArray(T**& t, int width, int height);
 	template <typename T> void DestroyArray(T**& t);

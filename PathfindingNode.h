@@ -43,7 +43,7 @@
 struct PathfindingNode
 {
 public:
-	PathfindingNode * m_parent;
+	unsigned int m_parent;
 	short m_row, m_col;
 	unsigned int m_givenCost;
 	unsigned int m_finalCost;

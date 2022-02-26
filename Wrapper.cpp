@@ -26,8 +26,9 @@ void JPSPWrapper::Preprocess() {
     PrecomputeMap precomputeMap(w, h, bits);
     precomputeMap.CalculateMap();
     precomputeMap.ConstrutMap();
-    JumpDistancesAndGoalBounds **preprocessedMap = precomputeMap.GetPreprocessedMap();
-    this->jpsPlus = new JPSPlus(preprocessedMap, bits, w, h);
+//    JumpDistancesAndGoalBounds **preprocessedMap = precomputeMap.GetPreprocessedMap();
+    JumpDistancesAndGoalBounds *preprocessedMap = precomputeMap.GetPreprocessedMap();
+    this->jpsPlus = new JPSPlus(preprocessedMap, w, h);
 }
 
 std::vector<xyLoc> *JPSPWrapper::GetPath(xyLoc &s, xyLoc &g) {
