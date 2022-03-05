@@ -144,184 +144,184 @@ void PrecomputeMap::DestroyArray(T**& t)
 	t = 0;
 }
 
-//void PrecomputeMap::CalculateJumpPointMap()
-//{
-//	for (int r = 0; r < m_height; ++r)
-//	{
-//		for (int c = 0; c < m_width; ++c)
-//		{
-//			if (m_map[c + (r * m_width)])
-//			{
-//				if (IsJumpPoint(r, c, 1, 0))
-//				{
-//					m_jumpPointMap[r][c] |= MovingDown;
-//				}
-//				if (IsJumpPoint(r, c, -1, 0))
-//				{
-//					m_jumpPointMap[r][c] |= MovingUp;
-//				}
-//				if (IsJumpPoint(r, c, 0, 1))
-//				{
-//					m_jumpPointMap[r][c] |= MovingRight;
-//				}
-//				if (IsJumpPoint(r, c, 0, -1))
-//				{
-//					m_jumpPointMap[r][c] |= MovingLeft;
-//				}
-//			}
-//		}
-//	}
-//}
-//
-//bool PrecomputeMap::IsJumpPoint(int r, int c, int rowDir, int colDir)
-//{
-//	return
-//		IsEmpty(r - rowDir, c - colDir) &&						// Parent not a wall (not necessary)
-//		((IsEmpty(r + colDir, c + rowDir) &&					// 1st forced neighbor
-//			IsWall(r - rowDir + colDir, c - colDir + rowDir)) ||	// 1st forced neighbor (continued)
-//			((IsEmpty(r - colDir, c - rowDir) &&					// 2nd forced neighbor
-//				IsWall(r - rowDir - colDir, c - colDir - rowDir))));	// 2nd forced neighbor (continued)
-//}
-
 void PrecomputeMap::CalculateJumpPointMap()
 {
 	for (int r = 0; r < m_height; ++r)
 	{
 		for (int c = 0; c < m_width; ++c)
 		{
-            // 阻挡
-			if (!m_map[c + (r * m_width)])
+			if (m_map[c + (r * m_width)])
 			{
-				// North
-				int north_r = r - 1, north_c = c;
-				if (IsEmpty(north_r, north_c)) {
-					// West and South-East is empty.
-					if (IsEmpty(north_r, north_c - 1) && IsEmpty(north_r + 1, north_c + 1)) {
-						m_jumpPointMap[north_r][north_c] |= IsJumpPoint;
-						m_jumpPointMap[north_r][north_c] |= MovingRight;
-						LOG("row %d, col %d, North %d.\n", r, c, 1);
-					}
-					// East and South-West is empty.
-					if (IsEmpty(north_r, north_c + 1) && IsEmpty(north_r + 1, north_c - 1)) {
-						m_jumpPointMap[north_r][north_c] |= IsJumpPoint;
-						m_jumpPointMap[north_r][north_c] |= MovingLeft;
-						LOG("row %d, col %d, North %d.\n", r, c, 2);
-					}
-					// South-East and South-West is empty.
-					if (IsEmpty(north_r + 1, north_c + 1) && IsEmpty(north_r + 1, north_c - 1)) {
-						m_jumpPointMap[north_r][north_c] |= IsJumpPoint;
-						LOG("row %d, col %d, North %d.\n", r, c, 3);
-					}
+				if (IsJumpPoint(r, c, 1, 0))
+				{
+					m_jumpPointMap[r][c] |= MovingDown;
 				}
-
-				// East
-				int east_r = r, east_c = c + 1;
-				if (IsEmpty(east_r, east_c)) {
-					// North and South-West is empty.
-					if (IsEmpty(east_r - 1, east_c) && IsEmpty(east_r + 1, east_c - 1)) {
-						m_jumpPointMap[east_r][east_c] |= IsJumpPoint;
-						m_jumpPointMap[east_r][east_c] |= MovingDown;
-						LOG("row %d, col %d, East %d.\n", r, c, 1);
-					}
-					// South and North-West is empty.
-					if (IsEmpty(east_r + 1, east_c) && IsEmpty(east_r - 1, east_c - 1)) {
-						m_jumpPointMap[east_r][east_c] |= IsJumpPoint;
-						m_jumpPointMap[east_r][east_c] |= MovingUp;
-						LOG("row %d, col %d, East %d.\n", r, c, 2);
-					}
-					// North-West and South-West is empty.
-					if (IsEmpty(east_r - 1, east_c - 1) && IsEmpty(east_r + 1, east_c - 1)) {
-						m_jumpPointMap[east_r][east_c] |= IsJumpPoint;
-						LOG("row %d, col %d, East %d.\n", r, c, 3);
-					}
+				if (IsJumpPoint(r, c, -1, 0))
+				{
+					m_jumpPointMap[r][c] |= MovingUp;
 				}
-
-				// South
-				int south_r = r + 1, south_c = c;
-				if (IsEmpty(south_r, south_c)) {
-					// West and North-East is empty.
-					if (IsEmpty(south_r, south_c - 1) && IsEmpty(south_r - 1, south_c + 1)) {
-						m_jumpPointMap[south_r][south_c] |= IsJumpPoint;
-						m_jumpPointMap[south_r][south_c] |= MovingRight;
-						LOG("row %d, col %d, South %d.\n", r, c, 1);
-					}
-					// East and North-West is empty.
-					if (IsEmpty(south_r, south_c + 1) && IsEmpty(south_r - 1, south_c - 1)) {
-						m_jumpPointMap[south_r][south_c] |= IsJumpPoint;
-						m_jumpPointMap[south_r][south_c] |= MovingLeft;
-						LOG("row %d, col %d, South %d.\n", r, c, 2);
-					}
-					// North-West and North-East is empty.
-					if (IsEmpty(south_r - 1, south_c - 1) && IsEmpty(south_r - 1, south_c + 1)) {
-						m_jumpPointMap[south_r][south_c] |= IsJumpPoint;
-						LOG("row %d, col %d, South %d.\n", r, c, 3);
-					}
+				if (IsJumpPoint(r, c, 0, 1))
+				{
+					m_jumpPointMap[r][c] |= MovingRight;
 				}
-
-				// West
-				int west_r = r, west_c = c - 1;
-				if (IsEmpty(west_r, west_c)) {
-					// North and South-East is empty.
-					if (IsEmpty(west_r - 1, west_c) && IsEmpty(west_r + 1, west_c + 1)) {
-						m_jumpPointMap[west_r][west_c] |= IsJumpPoint;
-						m_jumpPointMap[west_r][west_c] |= MovingDown;
-						LOG("row %d, col %d, West %d.\n", r, c, 1);
-					}
-					// South and North-East is empty.
-					if (IsEmpty(west_r + 1, west_c) && IsEmpty(west_r - 1, west_c + 1)) {
-						m_jumpPointMap[west_r][west_c] |= IsJumpPoint;
-						m_jumpPointMap[west_r][west_c] |= MovingUp;
-						LOG("row %d, col %d, West %d.\n", r, c, 2);
-					}
-					// South-East and North-East is empty.
-					if (IsEmpty(west_r + 1, west_c + 1) && IsEmpty(west_r - 1, west_c + 1)) {
-						m_jumpPointMap[west_r][west_c] |= IsJumpPoint;
-						LOG("row %d, col %d, West %d.\n", r, c, 3);
-					}
+				if (IsJumpPoint(r, c, 0, -1))
+				{
+					m_jumpPointMap[r][c] |= MovingLeft;
 				}
-			}
-		}
-	}
-
-	//LOG("Map:\n");
-	//for (int r = 0; r < m_height; ++r)
-	//{
-	//	for (int c = 0; c < m_width; ++c)
-	//	{
-	//		if (m_map[c + (r * m_width)]) {
-	//			LOG("True  ");
-	//		}
-	//		else {
-	//			LOG("False ");
-	//		}
-	//	}
-	//	LOG("\n");
-	//}
-
-	for (int r = 0; r < m_height; ++r)
-	{
-		for (int c = 0; c < m_width; ++c)
-		{
-			if ((m_jumpPointMap[r][c] & IsJumpPoint) > 0)
-			{
-				LOG("Primary jump point: (%d, %d), num %d, direction: ", r, c, m_jumpPointMap[r][c]);
-				if ((m_jumpPointMap[r][c] & MovingLeft) > 0) {
-					LOG("Left ");
-				}
-				if ((m_jumpPointMap[r][c] & MovingRight) > 0) {
-					LOG("Right ");
-				}
-				if ((m_jumpPointMap[r][c] & MovingUp) > 0) {
-					LOG("Up ");
-				}
-				if ((m_jumpPointMap[r][c] & MovingDown) > 0) {
-					LOG("Down ");
-				}
-				LOG("\n");
 			}
 		}
 	}
 }
+
+bool PrecomputeMap::IsJumpPoint(int r, int c, int rowDir, int colDir)
+{
+	return
+		IsEmpty(r - rowDir, c - colDir) &&						// Parent not a wall (not necessary)
+		((IsEmpty(r + colDir, c + rowDir) &&					// 1st forced neighbor
+			IsWall(r - rowDir + colDir, c - colDir + rowDir)) ||	// 1st forced neighbor (continued)
+			((IsEmpty(r - colDir, c - rowDir) &&					// 2nd forced neighbor
+				IsWall(r - rowDir - colDir, c - colDir - rowDir))));	// 2nd forced neighbor (continued)
+}
+
+//void PrecomputeMap::CalculateJumpPointMap()
+//{
+//	for (int r = 0; r < m_height; ++r)
+//	{
+//		for (int c = 0; c < m_width; ++c)
+//		{
+//            // 阻挡
+//			if (!m_map[c + (r * m_width)])
+//			{
+//				// North
+//				int north_r = r - 1, north_c = c;
+//				if (IsEmpty(north_r, north_c)) {
+//					// West and South-East is empty.
+//					if (IsEmpty(north_r, north_c - 1) && IsEmpty(north_r + 1, north_c + 1)) {
+//						m_jumpPointMap[north_r][north_c] |= IsJumpPoint;
+//						m_jumpPointMap[north_r][north_c] |= MovingRight;
+//						LOG("row %d, col %d, North %d.\n", r, c, 1);
+//					}
+//					// East and South-West is empty.
+//					if (IsEmpty(north_r, north_c + 1) && IsEmpty(north_r + 1, north_c - 1)) {
+//						m_jumpPointMap[north_r][north_c] |= IsJumpPoint;
+//						m_jumpPointMap[north_r][north_c] |= MovingLeft;
+//						LOG("row %d, col %d, North %d.\n", r, c, 2);
+//					}
+//					// South-East and South-West is empty.
+//					if (IsEmpty(north_r + 1, north_c + 1) && IsEmpty(north_r + 1, north_c - 1)) {
+//						m_jumpPointMap[north_r][north_c] |= IsJumpPoint;
+//						LOG("row %d, col %d, North %d.\n", r, c, 3);
+//					}
+//				}
+//
+//				// East
+//				int east_r = r, east_c = c + 1;
+//				if (IsEmpty(east_r, east_c)) {
+//					// North and South-West is empty.
+//					if (IsEmpty(east_r - 1, east_c) && IsEmpty(east_r + 1, east_c - 1)) {
+//						m_jumpPointMap[east_r][east_c] |= IsJumpPoint;
+//						m_jumpPointMap[east_r][east_c] |= MovingDown;
+//						LOG("row %d, col %d, East %d.\n", r, c, 1);
+//					}
+//					// South and North-West is empty.
+//					if (IsEmpty(east_r + 1, east_c) && IsEmpty(east_r - 1, east_c - 1)) {
+//						m_jumpPointMap[east_r][east_c] |= IsJumpPoint;
+//						m_jumpPointMap[east_r][east_c] |= MovingUp;
+//						LOG("row %d, col %d, East %d.\n", r, c, 2);
+//					}
+//					// North-West and South-West is empty.
+//					if (IsEmpty(east_r - 1, east_c - 1) && IsEmpty(east_r + 1, east_c - 1)) {
+//						m_jumpPointMap[east_r][east_c] |= IsJumpPoint;
+//						LOG("row %d, col %d, East %d.\n", r, c, 3);
+//					}
+//				}
+//
+//				// South
+//				int south_r = r + 1, south_c = c;
+//				if (IsEmpty(south_r, south_c)) {
+//					// West and North-East is empty.
+//					if (IsEmpty(south_r, south_c - 1) && IsEmpty(south_r - 1, south_c + 1)) {
+//						m_jumpPointMap[south_r][south_c] |= IsJumpPoint;
+//						m_jumpPointMap[south_r][south_c] |= MovingRight;
+//						LOG("row %d, col %d, South %d.\n", r, c, 1);
+//					}
+//					// East and North-West is empty.
+//					if (IsEmpty(south_r, south_c + 1) && IsEmpty(south_r - 1, south_c - 1)) {
+//						m_jumpPointMap[south_r][south_c] |= IsJumpPoint;
+//						m_jumpPointMap[south_r][south_c] |= MovingLeft;
+//						LOG("row %d, col %d, South %d.\n", r, c, 2);
+//					}
+//					// North-West and North-East is empty.
+//					if (IsEmpty(south_r - 1, south_c - 1) && IsEmpty(south_r - 1, south_c + 1)) {
+//						m_jumpPointMap[south_r][south_c] |= IsJumpPoint;
+//						LOG("row %d, col %d, South %d.\n", r, c, 3);
+//					}
+//				}
+//
+//				// West
+//				int west_r = r, west_c = c - 1;
+//				if (IsEmpty(west_r, west_c)) {
+//					// North and South-East is empty.
+//					if (IsEmpty(west_r - 1, west_c) && IsEmpty(west_r + 1, west_c + 1)) {
+//						m_jumpPointMap[west_r][west_c] |= IsJumpPoint;
+//						m_jumpPointMap[west_r][west_c] |= MovingDown;
+//						LOG("row %d, col %d, West %d.\n", r, c, 1);
+//					}
+//					// South and North-East is empty.
+//					if (IsEmpty(west_r + 1, west_c) && IsEmpty(west_r - 1, west_c + 1)) {
+//						m_jumpPointMap[west_r][west_c] |= IsJumpPoint;
+//						m_jumpPointMap[west_r][west_c] |= MovingUp;
+//						LOG("row %d, col %d, West %d.\n", r, c, 2);
+//					}
+//					// South-East and North-East is empty.
+//					if (IsEmpty(west_r + 1, west_c + 1) && IsEmpty(west_r - 1, west_c + 1)) {
+//						m_jumpPointMap[west_r][west_c] |= IsJumpPoint;
+//						LOG("row %d, col %d, West %d.\n", r, c, 3);
+//					}
+//				}
+//			}
+//		}
+//	}
+//
+//	//LOG("Map:\n");
+//	//for (int r = 0; r < m_height; ++r)
+//	//{
+//	//	for (int c = 0; c < m_width; ++c)
+//	//	{
+//	//		if (m_map[c + (r * m_width)]) {
+//	//			LOG("True  ");
+//	//		}
+//	//		else {
+//	//			LOG("False ");
+//	//		}
+//	//	}
+//	//	LOG("\n");
+//	//}
+//
+//	for (int r = 0; r < m_height; ++r)
+//	{
+//		for (int c = 0; c < m_width; ++c)
+//		{
+//			if ((m_jumpPointMap[r][c] & IsJumpPoint) > 0)
+//			{
+//				LOG("Primary jump point: (%d, %d), num %d, direction: ", r, c, m_jumpPointMap[r][c]);
+//				if ((m_jumpPointMap[r][c] & MovingLeft) > 0) {
+//					LOG("Left ");
+//				}
+//				if ((m_jumpPointMap[r][c] & MovingRight) > 0) {
+//					LOG("Right ");
+//				}
+//				if ((m_jumpPointMap[r][c] & MovingUp) > 0) {
+//					LOG("Up ");
+//				}
+//				if ((m_jumpPointMap[r][c] & MovingDown) > 0) {
+//					LOG("Down ");
+//				}
+//				LOG("\n");
+//			}
+//		}
+//	}
+//}
 
 inline bool PrecomputeMap::IsInBounds(int r, int c)
 {
@@ -357,283 +357,553 @@ inline bool PrecomputeMap::IsWall(int r, int c)
 
 void PrecomputeMap::CalculateDistantJumpPointMap()
 {
-	// Calculate distant jump points (Left and Right)
-	for (int r = 0; r < m_height; ++r)
-	{
-		{
-			int countMovingLeft = -1;
-			bool jumpPointLastSeen = false;
-			for (int c = 0; c < m_width; ++c)
-			{
-				if (IsWall(r, c))
-				{
-					countMovingLeft = -1;
-					jumpPointLastSeen = false;
-					m_distantJumpPointMap[r][c].jumpDistance[Left] = 0;
-					continue;
-				}
+    // Calculate distant jump points (Left and Right)
+    for (int r = 0; r < m_height; ++r)
+    {
+        {
+            int countMovingLeft = -1;
+            bool jumpPointLastSeen = false;
+            for (int c = 0; c < m_width; ++c)
+            {
+                if (IsWall(r, c))
+                {
+                    countMovingLeft = -1;
+                    jumpPointLastSeen = false;
+                    m_distantJumpPointMap[r][c].jumpDistance[Left] = 0;
+                    continue;
+                }
 
-				countMovingLeft++;
+                countMovingLeft++;
 
-				if (jumpPointLastSeen)
-				{
-					m_distantJumpPointMap[r][c].jumpDistance[Left] = countMovingLeft;
-				}
-				else // Wall last seen
-				{
-					m_distantJumpPointMap[r][c].jumpDistance[Left] = -countMovingLeft;
-				}
+                if (jumpPointLastSeen)
+                {
+                    m_distantJumpPointMap[r][c].jumpDistance[Left] = countMovingLeft;
+                }
+                else // Wall last seen
+                {
+                    m_distantJumpPointMap[r][c].jumpDistance[Left] = -countMovingLeft;
+                }
 
-				if ((m_jumpPointMap[r][c] & MovingLeft) > 0)
-				{
-					countMovingLeft = 0;
-					jumpPointLastSeen = true;
-				}
-			}
-		}
+                if ((m_jumpPointMap[r][c] & MovingLeft) > 0)
+                {
+                    countMovingLeft = 0;
+                    jumpPointLastSeen = true;
+                }
+            }
+        }
 
-		{
-			int countMovingRight = -1;
-			bool jumpPointLastSeen = false;
-			for (int c = m_width - 1; c >= 0; --c)
-			{
-				if (IsWall(r, c))
-				{
-					countMovingRight = -1;
-					jumpPointLastSeen = false;
-					m_distantJumpPointMap[r][c].jumpDistance[Right] = 0;
-					continue;
-				}
+        {
+            int countMovingRight = -1;
+            bool jumpPointLastSeen = false;
+            for (int c = m_width - 1; c >= 0; --c)
+            {
+                if (IsWall(r, c))
+                {
+                    countMovingRight = -1;
+                    jumpPointLastSeen = false;
+                    m_distantJumpPointMap[r][c].jumpDistance[Right] = 0;
+                    continue;
+                }
 
-				countMovingRight++;
+                countMovingRight++;
 
-				if (jumpPointLastSeen)
-				{
-					m_distantJumpPointMap[r][c].jumpDistance[Right] = countMovingRight;
-				}
-				else // Wall last seen
-				{
-					m_distantJumpPointMap[r][c].jumpDistance[Right] = -countMovingRight;
-				}
+                if (jumpPointLastSeen)
+                {
+                    m_distantJumpPointMap[r][c].jumpDistance[Right] = countMovingRight;
+                }
+                else // Wall last seen
+                {
+                    m_distantJumpPointMap[r][c].jumpDistance[Right] = -countMovingRight;
+                }
 
-				if ((m_jumpPointMap[r][c] & MovingRight) > 0)
-				{
-					countMovingRight = 0;
-					jumpPointLastSeen = true;
-				}
-			}
-		}
-	}
+                if ((m_jumpPointMap[r][c] & MovingRight) > 0)
+                {
+                    countMovingRight = 0;
+                    jumpPointLastSeen = true;
+                }
+            }
+        }
+    }
 
-	// Calculate distant jump points (Up and Down)
-	for (int c = 0; c < m_width; ++c)
-	{
-		{
-			int countMovingUp = -1;
-			bool jumpPointLastSeen = false;
-			for (int r = 0; r < m_height; ++r)
-			{
-				if (IsWall(r, c))
-				{
-					countMovingUp = -1;
-					jumpPointLastSeen = false;
-					m_distantJumpPointMap[r][c].jumpDistance[Up] = 0;
-					continue;
-				}
+    // Calculate distant jump points (Up and Down)
+    for (int c = 0; c < m_width; ++c)
+    {
+        {
+            int countMovingUp = -1;
+            bool jumpPointLastSeen = false;
+            for (int r = 0; r < m_height; ++r)
+            {
+                if (IsWall(r, c))
+                {
+                    countMovingUp = -1;
+                    jumpPointLastSeen = false;
+                    m_distantJumpPointMap[r][c].jumpDistance[Up] = 0;
+                    continue;
+                }
 
-				countMovingUp++;
+                countMovingUp++;
 
-				if (jumpPointLastSeen)
-				{
-					m_distantJumpPointMap[r][c].jumpDistance[Up] = countMovingUp;
-				}
-				else // Wall last seen
-				{
-					m_distantJumpPointMap[r][c].jumpDistance[Up] = -countMovingUp;
-				}
+                if (jumpPointLastSeen)
+                {
+                    m_distantJumpPointMap[r][c].jumpDistance[Up] = countMovingUp;
+                }
+                else // Wall last seen
+                {
+                    m_distantJumpPointMap[r][c].jumpDistance[Up] = -countMovingUp;
+                }
 
-				if ((m_jumpPointMap[r][c] & MovingUp) > 0)
-				{
-					countMovingUp = 0;
-					jumpPointLastSeen = true;
-				}
-			}
-		}
+                if ((m_jumpPointMap[r][c] & MovingUp) > 0)
+                {
+                    countMovingUp = 0;
+                    jumpPointLastSeen = true;
+                }
+            }
+        }
 
-		{
-			int countMovingDown = -1;
-			bool jumpPointLastSeen = false;
-			for (int r = m_height - 1; r >= 0; --r)
-			{
-				if (IsWall(r, c))
-				{
-					countMovingDown = -1;
-					jumpPointLastSeen = false;
-					m_distantJumpPointMap[r][c].jumpDistance[Down] = 0;
-					continue;
-				}
+        {
+            int countMovingDown = -1;
+            bool jumpPointLastSeen = false;
+            for (int r = m_height - 1; r >= 0; --r)
+            {
+                if (IsWall(r, c))
+                {
+                    countMovingDown = -1;
+                    jumpPointLastSeen = false;
+                    m_distantJumpPointMap[r][c].jumpDistance[Down] = 0;
+                    continue;
+                }
 
-				countMovingDown++;
+                countMovingDown++;
 
-				if (jumpPointLastSeen)
-				{
-					m_distantJumpPointMap[r][c].jumpDistance[Down] = countMovingDown;
-				}
-				else // Wall last seen
-				{
-					m_distantJumpPointMap[r][c].jumpDistance[Down] = -countMovingDown;
-				}
+                if (jumpPointLastSeen)
+                {
+                    m_distantJumpPointMap[r][c].jumpDistance[Down] = countMovingDown;
+                }
+                else // Wall last seen
+                {
+                    m_distantJumpPointMap[r][c].jumpDistance[Down] = -countMovingDown;
+                }
 
-				if ((m_jumpPointMap[r][c] & MovingDown) > 0)
-				{
-					countMovingDown = 0;
-					jumpPointLastSeen = true;
-				}
-			}
-		}
-	}
+                if ((m_jumpPointMap[r][c] & MovingDown) > 0)
+                {
+                    countMovingDown = 0;
+                    jumpPointLastSeen = true;
+                }
+            }
+        }
+    }
 
-	// Calculate distant jump points (Diagonally UpLeft and UpRight)
-	for (int r = 0; r < m_height; ++r)
-	{
-		for (int c = 0; c < m_width; ++c)
-		{
-			if (IsEmpty(r, c))
-			{
-				if (r == 0 || c == 0 || (
-					//IsWall(r - 1, c) || IsWall(r, c - 1) || 
-					IsWall(r - 1, c - 1)))
-				{
-					// Wall one away
-					m_distantJumpPointMap[r][c].jumpDistance[UpLeft] = 0;
-				}
-				else if (
-					//IsEmpty(r - 1, c) && IsEmpty(r, c - 1) && 
-					(m_distantJumpPointMap[r - 1][c - 1].jumpDistance[Up] > 0 ||
-						m_distantJumpPointMap[r - 1][c - 1].jumpDistance[Left] > 0 ||
-						(m_jumpPointMap[r - 1][c - 1] & IsJumpPoint) > 0))
-				{
-					// Diagonal one away
-					m_distantJumpPointMap[r][c].jumpDistance[UpLeft] = 1;
-				}
-				else
-				{
-					// Increment from last
-					int jumpDistance = m_distantJumpPointMap[r - 1][c - 1].jumpDistance[UpLeft];
+    // Calculate distant jump points (Diagonally UpLeft and UpRight)
+    for (int r = 0; r < m_height; ++r)
+    {
+        for (int c = 0; c < m_width; ++c)
+        {
+            if (IsEmpty(r, c))
+            {
+                if (r == 0 || c == 0 || (IsWall(r - 1, c) || IsWall(r, c - 1) || IsWall(r - 1, c - 1)))
+                {
+                    // Wall one away
+                    m_distantJumpPointMap[r][c].jumpDistance[UpLeft] = 0;
+                }
+                else if (IsEmpty(r - 1, c) && IsEmpty(r, c - 1) &&
+                         (m_distantJumpPointMap[r - 1][c - 1].jumpDistance[Up] > 0 ||
+                          m_distantJumpPointMap[r - 1][c - 1].jumpDistance[Left] > 0))
+                {
+                    // Diagonal one away
+                    m_distantJumpPointMap[r][c].jumpDistance[UpLeft] = 1;
+                }
+                else
+                {
+                    // Increment from last
+                    int jumpDistance = m_distantJumpPointMap[r - 1][c - 1].jumpDistance[UpLeft];
 
-					if (jumpDistance > 0)
-					{
-						m_distantJumpPointMap[r][c].jumpDistance[UpLeft] = 1 + jumpDistance;
-					}
-					else //if( jumpDistance <= 0 )
-					{
-						m_distantJumpPointMap[r][c].jumpDistance[UpLeft] = -1 + jumpDistance;
-					}
-				}
+                    if (jumpDistance > 0)
+                    {
+                        m_distantJumpPointMap[r][c].jumpDistance[UpLeft] = 1 + jumpDistance;
+                    }
+                    else //if( jumpDistance <= 0 )
+                    {
+                        m_distantJumpPointMap[r][c].jumpDistance[UpLeft] = -1 + jumpDistance;
+                    }
+                }
 
-				if (r == 0 || c == m_width - 1 || (
-					//IsWall(r - 1, c) || IsWall(r, c + 1) || 
-					IsWall(r - 1, c + 1)))
-				{
-					// Wall one away
-					m_distantJumpPointMap[r][c].jumpDistance[UpRight] = 0;
-				}
-				else if (
-					//IsEmpty(r - 1, c) && IsEmpty(r, c + 1) &&
-					(m_distantJumpPointMap[r - 1][c + 1].jumpDistance[Up] > 0 ||
-						m_distantJumpPointMap[r - 1][c + 1].jumpDistance[Right] > 0 ||
-						(m_jumpPointMap[r - 1][c + 1] & IsJumpPoint) > 0))
-				{
-					// Diagonal one away
-					m_distantJumpPointMap[r][c].jumpDistance[UpRight] = 1;
-				}
-				else
-				{
-					// Increment from last
-					int jumpDistance = m_distantJumpPointMap[r - 1][c + 1].jumpDistance[UpRight];
 
-					if (jumpDistance > 0)
-					{
-						m_distantJumpPointMap[r][c].jumpDistance[UpRight] = 1 + jumpDistance;
-					}
-					else //if( jumpDistance <= 0 )
-					{
-						m_distantJumpPointMap[r][c].jumpDistance[UpRight] = -1 + jumpDistance;
-					}
-				}
-			}
-		}
-	}
+                if (r == 0 || c == m_width - 1 || (IsWall(r - 1, c) || IsWall(r, c + 1) || IsWall(r - 1, c + 1)))
+                {
+                    // Wall one away
+                    m_distantJumpPointMap[r][c].jumpDistance[UpRight] = 0;
+                }
+                else if (IsEmpty(r - 1, c) && IsEmpty(r, c + 1) &&
+                         (m_distantJumpPointMap[r - 1][c + 1].jumpDistance[Up] > 0 ||
+                          m_distantJumpPointMap[r - 1][c + 1].jumpDistance[Right] > 0))
+                {
+                    // Diagonal one away
+                    m_distantJumpPointMap[r][c].jumpDistance[UpRight] = 1;
+                }
+                else
+                {
+                    // Increment from last
+                    int jumpDistance = m_distantJumpPointMap[r - 1][c + 1].jumpDistance[UpRight];
 
-	// Calculate distant jump points (Diagonally DownLeft and DownRight)
-	for (int r = m_height - 1; r >= 0; --r)
-	{
-		for (int c = 0; c < m_width; ++c)
-		{
-			if (IsEmpty(r, c))
-			{
-				if (r == m_height - 1 || c == 0 || (
-					//IsWall(r + 1, c) || IsWall(r, c - 1) ||
-					IsWall(r + 1, c - 1)))
-				{
-					// Wall one away
-					m_distantJumpPointMap[r][c].jumpDistance[DownLeft] = 0;
-				}
-				else if (
-					//IsEmpty(r + 1, c) && IsEmpty(r, c - 1) &&
-					(m_distantJumpPointMap[r + 1][c - 1].jumpDistance[Down] > 0 ||
-						m_distantJumpPointMap[r + 1][c - 1].jumpDistance[Left] > 0 ||
-						(m_jumpPointMap[r + 1][c - 1] & IsJumpPoint) > 0))
-				{
-					// Diagonal one away
-					m_distantJumpPointMap[r][c].jumpDistance[DownLeft] = 1;
-				}
-				else
-				{
-					// Increment from last
-					int jumpDistance = m_distantJumpPointMap[r + 1][c - 1].jumpDistance[DownLeft];
+                    if (jumpDistance > 0)
+                    {
+                        m_distantJumpPointMap[r][c].jumpDistance[UpRight] = 1 + jumpDistance;
+                    }
+                    else //if( jumpDistance <= 0 )
+                    {
+                        m_distantJumpPointMap[r][c].jumpDistance[UpRight] = -1 + jumpDistance;
+                    }
+                }
+            }
+        }
+    }
 
-					if (jumpDistance > 0)
-					{
-						m_distantJumpPointMap[r][c].jumpDistance[DownLeft] = 1 + jumpDistance;
-					}
-					else //if( jumpDistance <= 0 )
-					{
-						m_distantJumpPointMap[r][c].jumpDistance[DownLeft] = -1 + jumpDistance;
-					}
-				}
+    // Calculate distant jump points (Diagonally DownLeft and DownRight)
+    for (int r = m_height - 1; r >= 0; --r)
+    {
+        for (int c = 0; c < m_width; ++c)
+        {
+            if (IsEmpty(r, c))
+            {
+                if (r == m_height - 1 || c == 0 ||
+                    (IsWall(r + 1, c) || IsWall(r, c - 1) || IsWall(r + 1, c - 1)))
+                {
+                    // Wall one away
+                    m_distantJumpPointMap[r][c].jumpDistance[DownLeft] = 0;
+                }
+                else if (IsEmpty(r + 1, c) && IsEmpty(r, c - 1) &&
+                         (m_distantJumpPointMap[r + 1][c - 1].jumpDistance[Down] > 0 ||
+                          m_distantJumpPointMap[r + 1][c - 1].jumpDistance[Left] > 0))
+                {
+                    // Diagonal one away
+                    m_distantJumpPointMap[r][c].jumpDistance[DownLeft] = 1;
+                }
+                else
+                {
+                    // Increment from last
+                    int jumpDistance = m_distantJumpPointMap[r + 1][c - 1].jumpDistance[DownLeft];
 
-				if (r == m_height - 1 || c == m_width - 1 || (
-					//IsWall(r + 1, c) || IsWall(r, c + 1) || 
-					IsWall(r + 1, c + 1)))
-				{
-					// Wall one away
-					m_distantJumpPointMap[r][c].jumpDistance[DownRight] = 0;
-				}
-				else if (
-					//IsEmpty(r + 1, c) && IsEmpty(r, c + 1) &&
-					(m_distantJumpPointMap[r + 1][c + 1].jumpDistance[Down] > 0 ||
-						m_distantJumpPointMap[r + 1][c + 1].jumpDistance[Right] > 0 ||
-						(m_jumpPointMap[r + 1][c + 1] & IsJumpPoint) > 0))
-				{
-					// Diagonal one away
-					m_distantJumpPointMap[r][c].jumpDistance[DownRight] = 1;
-				}
-				else
-				{
-					// Increment from last
-					int jumpDistance = m_distantJumpPointMap[r + 1][c + 1].jumpDistance[DownRight];
+                    if (jumpDistance > 0)
+                    {
+                        m_distantJumpPointMap[r][c].jumpDistance[DownLeft] = 1 + jumpDistance;
+                    }
+                    else //if( jumpDistance <= 0 )
+                    {
+                        m_distantJumpPointMap[r][c].jumpDistance[DownLeft] = -1 + jumpDistance;
+                    }
+                }
 
-					if (jumpDistance > 0)
-					{
-						m_distantJumpPointMap[r][c].jumpDistance[DownRight] = 1 + jumpDistance;
-					}
-					else //if( jumpDistance <= 0 )
-					{
-						m_distantJumpPointMap[r][c].jumpDistance[DownRight] = -1 + jumpDistance;
-					}
-				}
-			}
-		}
-	}
+
+                if (r == m_height - 1 || c == m_width - 1 || (IsWall(r + 1, c) || IsWall(r, c + 1) || IsWall(r + 1, c + 1)))
+                {
+                    // Wall one away
+                    m_distantJumpPointMap[r][c].jumpDistance[DownRight] = 0;
+                }
+                else if (IsEmpty(r + 1, c) && IsEmpty(r, c + 1) &&
+                         (m_distantJumpPointMap[r + 1][c + 1].jumpDistance[Down] > 0 ||
+                          m_distantJumpPointMap[r + 1][c + 1].jumpDistance[Right] > 0))
+                {
+                    // Diagonal one away
+                    m_distantJumpPointMap[r][c].jumpDistance[DownRight] = 1;
+                }
+                else
+                {
+                    // Increment from last
+                    int jumpDistance = m_distantJumpPointMap[r + 1][c + 1].jumpDistance[DownRight];
+
+                    if (jumpDistance > 0)
+                    {
+                        m_distantJumpPointMap[r][c].jumpDistance[DownRight] = 1 + jumpDistance;
+                    }
+                    else //if( jumpDistance <= 0 )
+                    {
+                        m_distantJumpPointMap[r][c].jumpDistance[DownRight] = -1 + jumpDistance;
+                    }
+                }
+            }
+        }
+    }
 }
+
+//void PrecomputeMap:: CalculateDistantJumpPointMap()
+//{
+//	// Calculate distant jump points (Left and Right)
+//	for (int r = 0; r < m_height; ++r)
+//	{
+//		{
+//			int countMovingLeft = -1;
+//			bool jumpPointLastSeen = false;
+//			for (int c = 0; c < m_width; ++c)
+//			{
+//				if (IsWall(r, c))
+//				{
+//					countMovingLeft = -1;
+//					jumpPointLastSeen = false;
+//					m_distantJumpPointMap[r][c].jumpDistance[Left] = 0;
+//					continue;
+//				}
+//
+//				countMovingLeft++;
+//
+//				if (jumpPointLastSeen)
+//				{
+//					m_distantJumpPointMap[r][c].jumpDistance[Left] = countMovingLeft;
+//				}
+//				else // Wall last seen
+//				{
+//					m_distantJumpPointMap[r][c].jumpDistance[Left] = -countMovingLeft;
+//				}
+//
+//				if ((m_jumpPointMap[r][c] & MovingLeft) > 0)
+//				{
+//					countMovingLeft = 0;
+//					jumpPointLastSeen = true;
+//				}
+//			}
+//		}
+//
+//		{
+//			int countMovingRight = -1;
+//			bool jumpPointLastSeen = false;
+//			for (int c = m_width - 1; c >= 0; --c)
+//			{
+//				if (IsWall(r, c))
+//				{
+//					countMovingRight = -1;
+//					jumpPointLastSeen = false;
+//					m_distantJumpPointMap[r][c].jumpDistance[Right] = 0;
+//					continue;
+//				}
+//
+//				countMovingRight++;
+//
+//				if (jumpPointLastSeen)
+//				{
+//					m_distantJumpPointMap[r][c].jumpDistance[Right] = countMovingRight;
+//				}
+//				else // Wall last seen
+//				{
+//					m_distantJumpPointMap[r][c].jumpDistance[Right] = -countMovingRight;
+//				}
+//
+//				if ((m_jumpPointMap[r][c] & MovingRight) > 0)
+//				{
+//					countMovingRight = 0;
+//					jumpPointLastSeen = true;
+//				}
+//			}
+//		}
+//	}
+//
+//	// Calculate distant jump points (Up and Down)
+//	for (int c = 0; c < m_width; ++c)
+//	{
+//		{
+//			int countMovingUp = -1;
+//			bool jumpPointLastSeen = false;
+//			for (int r = 0; r < m_height; ++r)
+//			{
+//				if (IsWall(r, c))
+//				{
+//					countMovingUp = -1;
+//					jumpPointLastSeen = false;
+//					m_distantJumpPointMap[r][c].jumpDistance[Up] = 0;
+//					continue;
+//				}
+//
+//				countMovingUp++;
+//
+//				if (jumpPointLastSeen)
+//				{
+//					m_distantJumpPointMap[r][c].jumpDistance[Up] = countMovingUp;
+//				}
+//				else // Wall last seen
+//				{
+//					m_distantJumpPointMap[r][c].jumpDistance[Up] = -countMovingUp;
+//				}
+//
+//				if ((m_jumpPointMap[r][c] & MovingUp) > 0)
+//				{
+//					countMovingUp = 0;
+//					jumpPointLastSeen = true;
+//				}
+//			}
+//		}
+//
+//		{
+//			int countMovingDown = -1;
+//			bool jumpPointLastSeen = false;
+//			for (int r = m_height - 1; r >= 0; --r)
+//			{
+//				if (IsWall(r, c))
+//				{
+//					countMovingDown = -1;
+//					jumpPointLastSeen = false;
+//					m_distantJumpPointMap[r][c].jumpDistance[Down] = 0;
+//					continue;
+//				}
+//
+//				countMovingDown++;
+//
+//				if (jumpPointLastSeen)
+//				{
+//					m_distantJumpPointMap[r][c].jumpDistance[Down] = countMovingDown;
+//				}
+//				else // Wall last seen
+//				{
+//					m_distantJumpPointMap[r][c].jumpDistance[Down] = -countMovingDown;
+//				}
+//
+//				if ((m_jumpPointMap[r][c] & MovingDown) > 0)
+//				{
+//					countMovingDown = 0;
+//					jumpPointLastSeen = true;
+//				}
+//			}
+//		}
+//	}
+//
+//	// Calculate distant jump points (Diagonally UpLeft and UpRight)
+//	for (int r = 0; r < m_height; ++r)
+//	{
+//		for (int c = 0; c < m_width; ++c)
+//		{
+//			if (IsEmpty(r, c))
+//			{
+//				if (r == 0 || c == 0 || (
+//					//IsWall(r - 1, c) || IsWall(r, c - 1) ||
+//					IsWall(r - 1, c - 1)))
+//				{
+//					// Wall one away
+//					m_distantJumpPointMap[r][c].jumpDistance[UpLeft] = 0;
+//				}
+//				else if (
+//					//IsEmpty(r - 1, c) && IsEmpty(r, c - 1) &&
+//					(m_distantJumpPointMap[r - 1][c - 1].jumpDistance[Up] > 0 ||
+//						m_distantJumpPointMap[r - 1][c - 1].jumpDistance[Left] > 0 ||
+//						(m_jumpPointMap[r - 1][c - 1] & IsJumpPoint) > 0))
+//				{
+//					// Diagonal one away
+//					m_distantJumpPointMap[r][c].jumpDistance[UpLeft] = 1;
+//				}
+//				else
+//				{
+//					// Increment from last
+//					int jumpDistance = m_distantJumpPointMap[r - 1][c - 1].jumpDistance[UpLeft];
+//
+//					if (jumpDistance > 0)
+//					{
+//						m_distantJumpPointMap[r][c].jumpDistance[UpLeft] = 1 + jumpDistance;
+//					}
+//					else //if( jumpDistance <= 0 )
+//					{
+//						m_distantJumpPointMap[r][c].jumpDistance[UpLeft] = -1 + jumpDistance;
+//					}
+//				}
+//
+//				if (r == 0 || c == m_width - 1 || (
+//					//IsWall(r - 1, c) || IsWall(r, c + 1) ||
+//					IsWall(r - 1, c + 1)))
+//				{
+//					// Wall one away
+//					m_distantJumpPointMap[r][c].jumpDistance[UpRight] = 0;
+//				}
+//				else if (
+//					//IsEmpty(r - 1, c) && IsEmpty(r, c + 1) &&
+//					(m_distantJumpPointMap[r - 1][c + 1].jumpDistance[Up] > 0 ||
+//						m_distantJumpPointMap[r - 1][c + 1].jumpDistance[Right] > 0 ||
+//						(m_jumpPointMap[r - 1][c + 1] & IsJumpPoint) > 0))
+//				{
+//					// Diagonal one away
+//					m_distantJumpPointMap[r][c].jumpDistance[UpRight] = 1;
+//				}
+//				else
+//				{
+//					// Increment from last
+//					int jumpDistance = m_distantJumpPointMap[r - 1][c + 1].jumpDistance[UpRight];
+//
+//					if (jumpDistance > 0)
+//					{
+//						m_distantJumpPointMap[r][c].jumpDistance[UpRight] = 1 + jumpDistance;
+//					}
+//					else //if( jumpDistance <= 0 )
+//					{
+//						m_distantJumpPointMap[r][c].jumpDistance[UpRight] = -1 + jumpDistance;
+//					}
+//				}
+//			}
+//		}
+//	}
+//
+//	// Calculate distant jump points (Diagonally DownLeft and DownRight)
+//	for (int r = m_height - 1; r >= 0; --r)
+//	{
+//		for (int c = 0; c < m_width; ++c)
+//		{
+//			if (IsEmpty(r, c))
+//			{
+//				if (r == m_height - 1 || c == 0 || (
+//					//IsWall(r + 1, c) || IsWall(r, c - 1) ||
+//					IsWall(r + 1, c - 1)))
+//				{
+//					// Wall one away
+//					m_distantJumpPointMap[r][c].jumpDistance[DownLeft] = 0;
+//				}
+//				else if (
+//					//IsEmpty(r + 1, c) && IsEmpty(r, c - 1) &&
+//					(m_distantJumpPointMap[r + 1][c - 1].jumpDistance[Down] > 0 ||
+//						m_distantJumpPointMap[r + 1][c - 1].jumpDistance[Left] > 0 ||
+//						(m_jumpPointMap[r + 1][c - 1] & IsJumpPoint) > 0))
+//				{
+//					// Diagonal one away
+//					m_distantJumpPointMap[r][c].jumpDistance[DownLeft] = 1;
+//				}
+//				else
+//				{
+//					// Increment from last
+//					int jumpDistance = m_distantJumpPointMap[r + 1][c - 1].jumpDistance[DownLeft];
+//
+//					if (jumpDistance > 0)
+//					{
+//						m_distantJumpPointMap[r][c].jumpDistance[DownLeft] = 1 + jumpDistance;
+//					}
+//					else //if( jumpDistance <= 0 )
+//					{
+//						m_distantJumpPointMap[r][c].jumpDistance[DownLeft] = -1 + jumpDistance;
+//					}
+//				}
+//
+//				if (r == m_height - 1 || c == m_width - 1 || (
+//					//IsWall(r + 1, c) || IsWall(r, c + 1) ||
+//					IsWall(r + 1, c + 1)))
+//				{
+//					// Wall one away
+//					m_distantJumpPointMap[r][c].jumpDistance[DownRight] = 0;
+//				}
+//				else if (
+//					//IsEmpty(r + 1, c) && IsEmpty(r, c + 1) &&
+//					(m_distantJumpPointMap[r + 1][c + 1].jumpDistance[Down] > 0 ||
+//						m_distantJumpPointMap[r + 1][c + 1].jumpDistance[Right] > 0 ||
+//						(m_jumpPointMap[r + 1][c + 1] & IsJumpPoint) > 0))
+//				{
+//					// Diagonal one away
+//					m_distantJumpPointMap[r][c].jumpDistance[DownRight] = 1;
+//				}
+//				else
+//				{
+//					// Increment from last
+//					int jumpDistance = m_distantJumpPointMap[r + 1][c + 1].jumpDistance[DownRight];
+//
+//					if (jumpDistance > 0)
+//					{
+//						m_distantJumpPointMap[r][c].jumpDistance[DownRight] = 1 + jumpDistance;
+//					}
+//					else //if( jumpDistance <= 0 )
+//					{
+//						m_distantJumpPointMap[r][c].jumpDistance[DownRight] = -1 + jumpDistance;
+//					}
+//				}
+//			}
+//		}
+//	}
+//}

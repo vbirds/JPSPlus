@@ -61,8 +61,8 @@ JPSPlus::JPSPlus(JumpDistancesAndGoalBounds* jumpDistancesAndGoalBoundsMap, int 
 	m_height = h;
 
 	// Adjust preallocation for worst-case
-	m_simpleUnsortedPriorityQueue = new SimpleUnsortedPriorityQueue(100000);
-	m_fastStack = new FastStack(100000);
+	m_simpleUnsortedPriorityQueue = new SimpleUnsortedPriorityQueue(10000);
+	m_fastStack = new FastStack(10000);
 
 	m_jumpDistancesAndGoalBounds = jumpDistancesAndGoalBoundsMap;
 	m_currentIteration = 1;	// This gets incremented on each search
@@ -169,6 +169,13 @@ bool JPSPlus::GetPath(xyLocJPS& s, xyLocJPS& g, std::vector<xyLocJPS> &path)
 
 PathStatus JPSPlus::SearchLoop(PathfindingNode* startNode)
 {
+    // Create 2048 entry function pointer lookup table
+#define CASE(x) &JPSPlus::Explore_##x,
+    static const FunctionPointer exploreDirections[2048] =
+    {
+        #include "Cases.h"
+    };
+#undef CASE
 	{
 		// Special case for the starting node
 
@@ -204,14 +211,12 @@ PathStatus JPSPlus::SearchLoop(PathfindingNode* startNode)
 		}
 
 		// Explore nodes based on parent
-//		JumpDistancesAndGoalBounds* jumpDistancesAndGoalBounds =
-//			&m_jumpDistancesAndGoalBounds[currentNode->m_row][currentNode->m_col];
-        int idx = (int)currentNode->m_col + ((int)currentNode->m_row * m_width);
-        // printf("%2d,%2d idx:%d\n", currentNode->m_row, currentNode->m_col, idx);
-        JumpDistancesAndGoalBounds* jumpDistancesAndGoalBounds =
-                &m_jumpDistancesAndGoalBounds[idx];
+		JumpDistancesAndGoalBounds* jumpDistancesAndGoalBounds =
+			&m_jumpDistancesAndGoalBounds[currentNode->m_col + currentNode->m_row * m_width];
+        (this->*exploreDirections[(jumpDistancesAndGoalBounds->blockedDirectionBitfield * 8) +
+                                  currentNode->m_directionFromParent])(currentNode, jumpDistancesAndGoalBounds);
 		// Allow cross obstacle situation, we should search all directions.
-		Explore_AllDirections(currentNode, jumpDistancesAndGoalBounds);
+//		Explore_AllDirections(currentNode, jumpDistancesAndGoalBounds);
 
 		currentNode->m_listStatus = PathfindingNode::OnClosed;
 	}

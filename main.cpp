@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    for (int i = 0; i < 80000; i++)
+    for (int i = 0; i < 10000; i++)
     {
         int x = Random(0, 999);
         int y = Random(0, 999);
@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
     jpgb->Preprocess();
 
     timer->StartTimer();
-    xyLoc *start = new xyLoc(10, 10), *end = new xyLoc(13, 15);
+    xyLoc *start = new xyLoc(10, 10), *end = new xyLoc(967, 635);
     std::vector<xyLoc> *path = jpgb->GetPath((xyLoc &) *start, (xyLoc &) *end);
 
     allTestsTotalTime += timer->EndTimer();

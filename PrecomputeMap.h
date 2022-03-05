@@ -75,7 +75,7 @@ struct JumpDistancesAndGoalBounds
 {
 	unsigned char blockedDirectionBitfield;	// highest bit [DownLeft, Left, UpLeft, Up, UpRight, Right, DownRight, Down] lowest bit
 	short jumpDistance[8];
-	short bounds[8][4];
+//	short bounds[8][4];
 };
 
 class PrecomputeMap
@@ -105,26 +105,26 @@ protected:
 
 	void CalculateJumpPointMap();
 	void CalculateDistantJumpPointMap();
-	//bool IsJumpPoint(int r, int c, int rowDir, int colDir);
+	bool IsJumpPoint(int r, int c, int rowDir, int colDir);
 	bool IsInBounds(int r, int c);
 	bool IsEmpty(int r, int c);
 	bool IsWall(int r, int c);
 
-	/*enum BitfieldDirections
+	enum BitfieldDirections
 	{
 		MovingDown = 1 << 0,
 		MovingRight = 1 << 1,
 		MovingUp = 1 << 2,
 		MovingLeft = 1 << 3,
-	};*/
-
-	enum BitfieldFlag
-	{
-		MovingDown = 1 << 0,
-		MovingRight = 1 << 1,
-		MovingUp = 1 << 2,
-		MovingLeft = 1 << 3,
-		IsJumpPoint = 1 << 4
 	};
+
+//	enum BitfieldFlag
+//	{
+//		MovingDown = 1 << 0,
+//		MovingRight = 1 << 1,
+//		MovingUp = 1 << 2,
+//		MovingLeft = 1 << 3,
+//		IsJumpPoint = 1 << 4
+//	};
 };
 
