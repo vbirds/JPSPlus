@@ -6,7 +6,6 @@
 //  Modified by Steve Rabin 12/15/14
 //
 //
-#include "stdafx.h"
 #include <vector>
 #include <cstdio>
 #include <cstdint>
