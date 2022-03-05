@@ -41,6 +41,7 @@
 #include "JPSPlus.h"
 #include "Log.h"
 #include <fstream>
+#include <memory.h>
 
 using std::ifstream;
 using std::ofstream;

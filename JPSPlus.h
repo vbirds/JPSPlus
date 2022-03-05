@@ -146,7 +146,7 @@ protected:
     {
         if (key == 0)
         {
-            return NULL;
+            return nullptr;
         }
         int col = key >> 16;
         int row = key & 0xffff;

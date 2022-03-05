@@ -38,6 +38,7 @@
  */
 
 #include "JPSPlus.h"
+#include <algorithm>
 
  // Ideal choice of fixed-point equivalent to 1.0 that can almost perfectly represent sqrt(2) and (sqrt(2) - 1) in whole numbers
  // 1.000000000 = 2378
@@ -224,17 +225,17 @@ PathStatus JPSPlus::SearchLoop(PathfindingNode* startNode)
 
 void JPSPlus::FinalizePath(std::vector<xyLocJPS> &finalPath)
 {
-	PathfindingNode* prevNode = NULL;
+	PathfindingNode* prevNode = nullptr;
 	PathfindingNode* curNode = m_goalNode;
 
-	while (curNode != NULL)
+	while (curNode != nullptr)
 	{
 		xyLocJPS loc;
 		loc.x = curNode->m_col;
 		loc.y = curNode->m_row;
 
 #if 0
-		if (prevNode != NULL)
+		if (prevNode != nullptr)
 		{
 			// Insert extra nodes if needed (may not be neccessary depending on final path use)
 			int xDiff = curNode->m_col - prevNode->m_col;
