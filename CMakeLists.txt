@@ -26,7 +26,6 @@ set(SOURCE_FILES
         JPSPlus.cpp
         PrecomputeMap.cpp
         SimpleUnsortedPriorityQueue.cpp
-        stdafx.cpp
         UnsortedPriorityQueue.cpp
         Wrapper.cpp
         WrapperInterface.cpp
